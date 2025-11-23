@@ -35,3 +35,27 @@ screen -r proximity1
 module load snakemake/9.9.0
 snakemake -s 0_preprocessing.smk --cores 8 --profile .
 ```
+
+#### 1 - Single coverage
+
+```sh
+screen -r proximity1
+module load snakemake/9.9.0
+snakemake -s 1_single_coverage.smk --cores 8 --profile .
+```
+
+#### 2 - All coverage
+
+```sh
+screen -r proximity1
+module load snakemake/9.9.0
+snakemake -s 1_single_coverage.smk --cores 8 --profile .
+```
+
+#### 4 - Random coverage
+
+```sh
+screen -r proximity1
+module load snakemake/9.9.0
+snakemake -s 1_single_coverage.smk --cores 8 --profile .
+```

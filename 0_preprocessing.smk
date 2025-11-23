@@ -5,7 +5,9 @@ configfile: "0_preprocessing.yaml"
 # Config variables
 WORKDIR = config["workdir"]
 READS = config["reads"]
-REFERENCE = config["reference_genome"]
+REFERENCE = config["reference"]
+REF_BASENAME = os.path.splitext(os.path.basename(REFERENCE))[0]
+
 
 # List genome and target wildcards
 SAMPLES, = glob_wildcards(f"{READS}/{{sample}}_1.fq.gz")
