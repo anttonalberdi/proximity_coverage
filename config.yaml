@@ -1,0 +1,12 @@
+executor: slurm
+jobs: 20
+latency-wait: 300
+rerun-incomplete: true
+keep-going: true
+retries: 3
+
+
+default-resources:
+    mem_mb: 8 * 1024
+    runtime: 10 * 2 ** (attempt - 1)
+max-threads: 8

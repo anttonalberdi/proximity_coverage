@@ -6,9 +6,9 @@ Repository of the proximity coverage study
 Place the snakemake profile config in the working directory.
 
 ```sh
-mkdir my_working_dir
-cd my_working_dir
-wget https://raw.githubusercontent.com/host-microbiota-multi-omics/snakemake_pipelines/refs/heads/main/config.yaml
+mkdir /projects/alberdilab/people/jpl786/2026_proximity_coverage/dogs
+cd /projects/alberdilab/people/jpl786/2026_proximity_coverage/dogs
+wget https://raw.githubusercontent.com/anttonalberdi/proximity_coverage/refs/heads/main/config.yaml
 ```
 
 ## Test 1: dogs
@@ -16,8 +16,8 @@ wget https://raw.githubusercontent.com/host-microbiota-multi-omics/snakemake_pip
 ### Get the code
 
 ```sh
-wget https://raw.githubusercontent.com/host-microbiota-multi-omics/snakemake_pipelines/refs/heads/main/1_preprocessing.smk
-wget https://raw.githubusercontent.com/host-microbiota-multi-omics/snakemake_pipelines/refs/heads/main/1_preprocessing.yaml
+wget https://raw.githubusercontent.com/anttonalberdi/proximity_coverage/refs/heads/main/0_preprocessing.smk
+wget https://raw.githubusercontent.com/anttonalberdi/proximity_coverage/refs/heads/main/0_preprocessing.yaml
 ```
 
 ### Prepare the config files
@@ -31,7 +31,7 @@ nano 0_preprocessing.yaml
 #### 0 - Preprocessing
 
 ```sh
-screen -r hmmo
+screen -r proximity1
 module load snakemake/9.9.0
 snakemake -s 0_preprocessing.smk --cores 8 --profile .
 ```
