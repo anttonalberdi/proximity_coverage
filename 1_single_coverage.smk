@@ -11,8 +11,7 @@ SAMPLES, = glob_wildcards(f"{WORKDIR}/0_preprocessing/bowtie/{{sample}}_1.fq.gz"
 rule all:
     input:
         expand(f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv", sample=SAMPLES),
-        expand(f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.summary", sample=SAMPLES),
-        expand(f"{WORKDIR}/1_single_coverage/semibin2/{{sample}}.tsv", sample=SAMPLES)
+        expand(f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.summary", sample=SAMPLES)
 
 rule assembly_map:
     input:
@@ -90,6 +89,20 @@ rule maxbin2:
         rm -rf {params.basename}*
         run_MaxBin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
         """
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 rule semibin2:
     input:
