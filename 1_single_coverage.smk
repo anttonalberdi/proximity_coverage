@@ -115,7 +115,7 @@ rule maxbin2:
         module load maxbin2/2.2.7 hmmer/3.3.2
         rm -rf {params.basedir}
         mkdir -p {params.basedir}
-        run_maxbin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
+        /opt/shared_software/shared_envmodules/conda/maxbin2-2.2.7/bin/run_MaxBin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
         
         # Generate summary file for dRep
         find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fasta" | sort > {output}
