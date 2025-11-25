@@ -86,7 +86,7 @@ rule metabat2_drep:
     threads: 8
     resources:
         mem_mb=lambda wildcards, input, attempt: max(16*1024, int(input.size_mb * 75) * 2 ** (attempt - 1)),
-        runtime=lambda wildcards, input, attempt: min(20000, max(30, int(input.size_mb / 3) * 2 ** (attempt - 1)))
+        runtime=lambda wildcards, input, attempt: min(20000, max(30, int(input.size_mb) * 2 ** (attempt - 1)))
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
         """
@@ -113,7 +113,7 @@ rule maxbin2:
         module load maxbin2/2.2.7 hmmer/3.3.2
         rm -rf {params.basename}*
         mkdir -p {params.basename}
-         v.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
+        run_maxbin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
         
         # Generate summary file for dRep
         find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fasta" | sort > {output}
