@@ -149,12 +149,17 @@ rule metabat2_drep:
 rule maxbin2:
     input:
         assembly=f"{WORKDIR}/0_preprocessing/megahit/{{assembly}}.fna",
-        depth=expand(f"{WORKDIR}/2_all_coverage/bowtie2/{{assembly}}_{{reads}}_maxbin.depth", reads=READS)
+        depth = lambda wildcards: expand(
+            f"{WORKDIR}/2_all_coverage/bowtie2/{{assembly}}_{{reads}}_maxbin.depth",
+            assembly=wildcards.assembly,
+            reads=READS
+        )
     output:
         f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}.tsv"
     params:
         basedir=f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}",
         basename=f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}/{{assembly}}"
+        abund=lambda wildcards, input: " ".join(f"-abund {f}" for f in input.depth)
     threads: 1
     resources:
         mem_mb=lambda wildcards, input, attempt: max(8*1024, int(input.size_mb * 50) * 2 ** (attempt - 1)),
@@ -165,7 +170,7 @@ rule maxbin2:
         module load maxbin2/2.2.7 hmmer/3.3.2
         rm -rf {params.basedir}
         mkdir -p {params.basedir}
-        /opt/shared_software/shared_envmodules/conda/maxbin2-2.2.7/bin/run_MaxBin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
+        /opt/shared_software/shared_envmodules/conda/maxbin2-2.2.7/bin/run_MaxBin.pl -contig {input.assembly} {params.abund} -max_iteration 10 -out {params.basename} -min_contig_length 1500
         
         # Generate summary file for dRep
         find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fasta" | sort > {output}
