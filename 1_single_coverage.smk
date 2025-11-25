@@ -10,8 +10,8 @@ SAMPLES, = glob_wildcards(f"{WORKDIR}/0_preprocessing/bowtie/{{sample}}_1.fq.gz"
 
 rule all:
     input:
-        expand(f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES),
-        expand(f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES)
+        expand(f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}/quality_report.tsv", sample=SAMPLES),
+        expand(f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}/quality_report.tsv", sample=SAMPLES)
 
 rule assembly_map:
     input:
@@ -75,6 +75,25 @@ rule metabat2:
         find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fa" | sort > {output}
         """
 
+rule metabat2_checkm:
+    input:
+        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv"
+    output:
+        f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}/quality_report.tsv"
+    params:
+        bins_dir=lambda wildcards: f"{WORKDIR}/1_single_coverage/metabat2/{wildcards.sample}",
+        outdir=f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}"
+    threads: 8
+    resources:
+        mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
+        runtime=lambda wildcards, input, attempt: min(20000, max(90, int(input.size_mb * 100) * 2 ** (attempt - 1)))
+    message: "Assessing quality of MetaBAT2 bins for {wildcards.sample} using CheckM2..."
+    shell:
+        """
+        module load checkm2/1.0.2
+        checkm2 predict -i {params.bins_dir} -o {params.outdir} -t {threads}
+        """
+
 rule metabat2_drep:
     input:
         f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv"
@@ -119,6 +138,25 @@ rule maxbin2:
         
         # Generate summary file for dRep
         find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fasta" | sort > {output}
+        """
+
+rule maxbin2_checkm:
+    input:
+        f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv"
+    output:
+        f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}/quality_report.tsv"
+    params:
+        bins_dir=lambda wildcards: f"{WORKDIR}/1_single_coverage/maxbin2/{wildcards.sample}",
+        outdir=f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}"
+    threads: 8
+    resources:
+        mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
+        runtime=lambda wildcards, input, attempt: min(20000, max(90, int(input.size_mb * 100) * 2 ** (attempt - 1)))
+    message: "Assessing quality of Maxbin2 bins for {wildcards.sample} using CheckM2..."
+    shell:
+        """
+        module load checkm2/1.0.2
+        checkm2 predict -i {params.bins_dir} -o {params.outdir} -t {threads}
         """
 
 rule maxbin2_drep:
