@@ -10,8 +10,8 @@ SAMPLES, = glob_wildcards(f"{WORKDIR}/0_preprocessing/bowtie/{{sample}}_1.fq.gz"
 
 rule all:
     input:
-        expand(f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}/quality_report.tsv", sample=SAMPLES),
-        expand(f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}/quality_report.tsv", sample=SAMPLES)
+        expand(f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES),
+        expand(f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES)
 
 rule assembly_map:
     input:
@@ -101,7 +101,8 @@ rule metabat2_checkm:
 
 rule metabat2_drep:
     input:
-        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv"
+        genomes=f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv",
+        genomeinfo=f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}.tsv"
     output:
         f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv"
     params:
@@ -117,7 +118,7 @@ rule metabat2_drep:
         module load drep/3.6.2 fastani/1.33 mash/2.3 checkm-genome/1.2.3
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
-        dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
+        dRep dereplicate {params.outdir} -g {input.genomes} -p {threads} -pa 0.95 --genomeInfo {input.genomeinfo}
         """
 
 rule maxbin2:
@@ -171,7 +172,8 @@ rule maxbin2_checkm:
 
 rule maxbin2_drep:
     input:
-        f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv"
+        genomes=f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv",
+        genomeinfo=f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}.tsv"
     output:
         f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv"
     params:
@@ -186,7 +188,7 @@ rule maxbin2_drep:
         module load drep/3.6.2 fastani/1.33 mash/2.3 checkm-genome/1.2.3
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
-        dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
+        dRep dereplicate {params.outdir} -g {input.genomes} -p {threads} -pa 0.95 --genomeInfo {input.genomeinfo}
         """
 
 
