@@ -59,6 +59,8 @@ rule metabat2:
         depth=f"{WORKDIR}/1_single_coverage/bowtie2/{{sample}}_metabat.depth"
     output:
         f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv"
+    params:
+        basename=f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}/{{sample}}"
     threads: 1
     resources:
         mem_mb=lambda wildcards, input, attempt: max(8*1024, int(input.size_mb * 50) * 2 ** (attempt - 1)),
@@ -67,7 +69,7 @@ rule metabat2:
     shell:
         """
         module load metabat2/2.17
-        metabat2 -i {input.assembly} -a {input.depth} -o {output} -m 1500 --saveCls
+        metabat2 -i {input.assembly} -a {input.depth} -o {params.basename} -m 1500 --saveCls
 
         # Generate summary file for dRep
         find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fa" | sort > {output}
@@ -90,7 +92,7 @@ rule metabat2_drep:
         """
         module load drep/3.4.0 fastani/1.33 mash/2.3
         mkdir -p {params.outdir}
-        dRep dereplicate {params.outdir} -g {params.bins_dir}/*.fa -p {threads} -pa 0.95
+        dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
         """
 
 rule maxbin2:
