@@ -90,7 +90,7 @@ rule metabat2_drep:
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
         """
-        module load drep/3.4.0 fastani/1.33 mash/2.3
+        module load drep/3.4.0 fastani/1.33 mash/2.3 checkm-genome/1.2.3
         mkdir -p {params.outdir}
         dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
         """
@@ -112,7 +112,8 @@ rule maxbin2:
         """
         module load maxbin2/2.2.7 hmmer/3.3.2
         rm -rf {params.basename}*
-        run_MaxBin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
+        mkdir -p {params.basename}
+         v.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
         
         # Generate summary file for dRep
         find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fasta" | sort > {output}
@@ -132,7 +133,7 @@ rule maxbin2_drep:
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
         """
-        module load drep/3.4.0 fastani/1.33 mash/2.3
+        module load drep/3.4.0 fastani/1.33 mash/2.3 checkm-genome/1.2.3
         mkdir -p {params.outdir}
         dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
         """
