@@ -91,6 +91,8 @@ rule metabat2_checkm:
     shell:
         """
         module load checkm2/1.0.2
+        rm -rf {params.outdir}
+        mkdir -p {params.outdir}
         checkm2 predict -i {params.bins_dir}/*.fa -o {params.outdir} -t {threads}
         """
 
@@ -156,6 +158,8 @@ rule maxbin2_checkm:
     shell:
         """
         module load checkm2/1.0.2
+        rm -rf {params.outdir}
+        mkdir -p {params.outdir}
         checkm2 predict -i {params.bins_dir}*.fasta -o {params.outdir} -t {threads}
         """
 
