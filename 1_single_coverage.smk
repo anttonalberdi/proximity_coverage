@@ -102,7 +102,7 @@ rule metabat2_checkm:
 rule metabat2_drep:
     input:
         genomes=f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv",
-        genomeinfo=f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}.tsv"
+        genomeinfo=f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}.tsv"
     output:
         f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv"
     params:
@@ -117,7 +117,6 @@ rule metabat2_drep:
         """
         module load drep/3.6.2 fastani/1.33 mash/2.3
         rm -rf {params.outdir}
-        mkdir -p {params.outdir}
         dRep dereplicate {params.outdir} -g {input.genomes} -p {threads} -pa 0.95 --genomeInfo {input.genomeinfo}
         """
 
@@ -187,7 +186,6 @@ rule maxbin2_drep:
         """
         module load drep/3.6.2 fastani/1.33 mash/2.3
         rm -rf {params.outdir}
-        mkdir -p {params.outdir}
         dRep dereplicate {params.outdir} -g {input.genomes} -p {threads} -pa 0.95 --genomeInfo {input.genomeinfo}
         """
 
