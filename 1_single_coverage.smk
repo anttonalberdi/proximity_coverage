@@ -90,7 +90,7 @@ rule metabat2_drep:
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
         """
-        module load drep/3.4.0 fastani/1.33 mash/2.3 checkm-genome/1.2.3
+        module load drep/3.6.2 fastani/1.33 mash/2.3 checkm-genome/1.2.3
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
         dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
@@ -135,7 +135,7 @@ rule maxbin2_drep:
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
         """
-        module load drep/3.4.0 fastani/1.33 mash/2.3 checkm-genome/1.2.3
+        module load drep/3.6.2 fastani/1.33 mash/2.3 checkm-genome/1.2.3
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
         dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
