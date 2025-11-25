@@ -149,7 +149,7 @@ rule metabat2_drep:
 rule maxbin2:
     input:
         assembly=f"{WORKDIR}/0_preprocessing/megahit/{{assembly}}.fna",
-        depth=f"{WORKDIR}/2_all_coverage/bowtie2/{{assembly}}_maxbin.depth"
+        depth=expand(f"{WORKDIR}/2_all_coverage/bowtie2/{{assembly}}_{{reads}}_maxbin.depth", reads=READS)
     output:
         f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}.tsv"
     params:
