@@ -75,7 +75,7 @@ rule metabat2:
 
 rule metabat2_drep:
     input:
-        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}/{{sample}}.tsv"
+        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv"
     output:
         f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv"
     params:
@@ -118,7 +118,7 @@ rule maxbin2:
 
 rule maxbin2_drep:
     input:
-        f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}.tsv"
+        f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv"
     output:
         f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv"
     params:
