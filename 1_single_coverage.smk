@@ -96,7 +96,7 @@ rule metabat2_checkm:
         checkm2 predict -i {params.bins_dir}/*.fa -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
 
         # Prepare genome info for drep
-        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1,$2,$3}}' {params.outdir}/quality_report.tsv > {output}
+        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fa",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
         """
 
 rule metabat2_drep:
@@ -166,7 +166,7 @@ rule maxbin2_checkm:
         checkm2 predict -i {params.bins_dir}/*.fasta -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
 
         # Prepare genome info for drep
-        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1,$2,$3}}' {params.outdir}/quality_report.tsv > {output}
+        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fasta",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
         """
 
 rule maxbin2_drep:
@@ -176,7 +176,7 @@ rule maxbin2_drep:
     output:
         f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv"
     params:
-        outdir=f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}"
+        outdir=f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}"
     threads: 8
     resources:
         mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
