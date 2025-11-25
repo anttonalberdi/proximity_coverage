@@ -44,7 +44,7 @@ rule assembly_map_depth:
     threads: 1
     resources:
         mem_mb=lambda wildcards, input, attempt: max(8*1024, int(input.size_mb) * 2 ** (attempt - 1)),
-        runtime=lambda wildcards, input, attempt: min(20000,max(15, int(input.size_mb / 100) * 2 ** (attempt - 1)))
+        runtime=lambda wildcards, input, attempt: min(20000,max(15, int(input.size_mb / 1000) * 2 ** (attempt - 1)))
     message: "Calculating mapping states of assembly {wildcards.sample}..."
     shell:
         """
@@ -85,7 +85,7 @@ rule metabat2_drep:
         outdir=f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}"
     threads: 8
     resources:
-        mem_mb=lambda wildcards, input, attempt: max(16*1024, int(input.size_mb * 75) * 2 ** (attempt - 1)),
+        mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
         runtime=lambda wildcards, input, attempt: min(20000, max(90, int(input.size_mb * 100) * 2 ** (attempt - 1)))
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
@@ -128,8 +128,8 @@ rule maxbin2_drep:
         outdir=f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}"
     threads: 8
     resources:
-        mem_mb=lambda wildcards, input, attempt: max(16*1024, int(input.size_mb * 75) * 2 ** (attempt - 1)),
-        runtime=lambda wildcards, input, attempt: min(20000, max(90, int(input.size_mb * 100) * 2 ** (attempt - 1)))
+        mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
+        runtime=lambda wildcards, input, attempt: min(20000, max(90, int(input.size_mb * 1000) * 2 ** (attempt - 1)))
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
         """
