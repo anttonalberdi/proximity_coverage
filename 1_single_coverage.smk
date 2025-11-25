@@ -91,6 +91,7 @@ rule metabat2_drep:
     shell:
         """
         module load drep/3.4.0 fastani/1.33 mash/2.3 checkm-genome/1.2.3
+        rm -rf {params.outdir}
         mkdir -p {params.outdir}
         dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
         """
@@ -102,6 +103,7 @@ rule maxbin2:
     output:
         f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv"
     params:
+        basedir=f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}",
         basename=f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}"
     threads: 1
     resources:
@@ -111,8 +113,8 @@ rule maxbin2:
     shell:
         """
         module load maxbin2/2.2.7 hmmer/3.3.2
-        rm -rf {params.basename}*
-        mkdir -p {params.basename}
+        rm -rf {params.basedir}
+        mkdir -p {params.basedir}
         run_maxbin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
         
         # Generate summary file for dRep
@@ -134,6 +136,7 @@ rule maxbin2_drep:
     shell:
         """
         module load drep/3.4.0 fastani/1.33 mash/2.3 checkm-genome/1.2.3
+        rm -rf {params.outdir}
         mkdir -p {params.outdir}
         dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
         """
