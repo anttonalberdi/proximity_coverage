@@ -10,8 +10,9 @@ SAMPLES, = glob_wildcards(f"{WORKDIR}/0_preprocessing/bowtie/{{sample}}_1.fq.gz"
 
 rule all:
     input:
-        expand(f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv", sample=SAMPLES),
-        expand(f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.summary", sample=SAMPLES)
+        expand(f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}/{{sample}}.tsv", sample=SAMPLES),
+        expand(f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES),
+        expand(f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}.summary", sample=SAMPLES)
 
 rule assembly_map:
     input:
@@ -58,7 +59,7 @@ rule metabat2:
         assembly=f"{WORKDIR}/0_preprocessing/megahit/{{sample}}.fna",
         depth=f"{WORKDIR}/1_single_coverage/bowtie2/{{sample}}_metabat.depth"
     output:
-        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv"
+        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}/{{sample}}.tsv"
     threads: 1
     resources:
         mem_mb=lambda wildcards, input, attempt: max(8*1024, int(input.size_mb * 50) * 2 ** (attempt - 1)),
@@ -67,7 +68,27 @@ rule metabat2:
     shell:
         """
         module load metabat2/2.17
-        metabat2 -i {input.assembly} -a {input.depth} -o {output} -m 1500 --saveCls --noBinOut
+        metabat2 -i {input.assembly} -a {input.depth} -o {output} -m 1500 --saveCls
+        """
+
+rule metabat2_drep:
+    input:
+        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}/{{sample}}.tsv"
+    output:
+        f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv"
+    params:
+        bins_dir=lambda wildcards: f"{WORKDIR}/1_single_coverage/metabat2/{wildcards.sample}",
+        outdir=f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}"
+    threads: 8
+    resources:
+        mem_mb=lambda wildcards, input, attempt: max(16*1024, int(input.size_mb * 75) * 2 ** (attempt - 1)),
+        runtime=lambda wildcards, input, attempt: min(20000, max(30, int(input.size_mb / 3) * 2 ** (attempt - 1)))
+    message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
+    shell:
+        """
+        module load drep/3.4.0 fastani/1.33 mash/2.3
+        mkdir -p {params.outdir}
+        dRep dereplicate {params.outdir} -g {params.bins_dir}/*.fa -p {threads} -pa 0.95
         """
 
 rule maxbin2:
@@ -75,9 +96,9 @@ rule maxbin2:
         assembly=f"{WORKDIR}/0_preprocessing/megahit/{{sample}}.fna",
         depth=f"{WORKDIR}/1_single_coverage/bowtie2/{{sample}}_maxbin.depth"
     output:
-         f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.summary"
+         f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}.summary"
     params:
-        basename=f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}"
+        basename=f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}"
     threads: 1
     resources:
         mem_mb=lambda wildcards, input, attempt: max(8*1024, int(input.size_mb * 50) * 2 ** (attempt - 1)),

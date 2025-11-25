@@ -18,6 +18,8 @@ wget https://raw.githubusercontent.com/anttonalberdi/proximity_coverage/refs/hea
 ```sh
 wget https://raw.githubusercontent.com/anttonalberdi/proximity_coverage/refs/heads/main/0_preprocessing.smk
 wget https://raw.githubusercontent.com/anttonalberdi/proximity_coverage/refs/heads/main/0_preprocessing.yaml
+wget http://raw.githubusercontent.com/anttonalberdi/proximity_coverage/refs/heads/main/1_single_coverage.smk
+wget https://raw.githubusercontent.com/anttonalberdi/proximity_coverage/refs/heads/main/2_all_coverage.smk
 ```
 
 ### Prepare the config files
