@@ -10,9 +10,8 @@ SAMPLES, = glob_wildcards(f"{WORKDIR}/0_preprocessing/bowtie/{{sample}}_1.fq.gz"
 
 rule all:
     input:
-        expand(f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}/{{sample}}.tsv", sample=SAMPLES),
         expand(f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES),
-        expand(f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}.summary", sample=SAMPLES)
+        expand(f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES)
 
 rule assembly_map:
     input:
@@ -59,7 +58,7 @@ rule metabat2:
         assembly=f"{WORKDIR}/0_preprocessing/megahit/{{sample}}.fna",
         depth=f"{WORKDIR}/1_single_coverage/bowtie2/{{sample}}_metabat.depth"
     output:
-        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}/{{sample}}.tsv"
+        f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv"
     threads: 1
     resources:
         mem_mb=lambda wildcards, input, attempt: max(8*1024, int(input.size_mb * 50) * 2 ** (attempt - 1)),
@@ -69,6 +68,9 @@ rule metabat2:
         """
         module load metabat2/2.17
         metabat2 -i {input.assembly} -a {input.depth} -o {output} -m 1500 --saveCls
+
+        # Generate summary file for dRep
+        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fa" | sort > {output}
         """
 
 rule metabat2_drep:
@@ -96,7 +98,7 @@ rule maxbin2:
         assembly=f"{WORKDIR}/0_preprocessing/megahit/{{sample}}.fna",
         depth=f"{WORKDIR}/1_single_coverage/bowtie2/{{sample}}_maxbin.depth"
     output:
-         f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}.summary"
+        f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv"
     params:
         basename=f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}"
     threads: 1
@@ -109,8 +111,29 @@ rule maxbin2:
         module load maxbin2/2.2.7 hmmer/3.3.2
         rm -rf {params.basename}*
         run_MaxBin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
+        
+        # Generate summary file for dRep
+        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fasta" | sort > {output}
         """
 
+rule maxbin2_drep:
+    input:
+        f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}/{{sample}}.tsv"
+    output:
+        f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv"
+    params:
+        outdir=f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}"
+    threads: 8
+    resources:
+        mem_mb=lambda wildcards, input, attempt: max(16*1024, int(input.size_mb * 75) * 2 ** (attempt - 1)),
+        runtime=lambda wildcards, input, attempt: min(20000, max(30, int(input.size_mb / 3) * 2 ** (attempt - 1)))
+    message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
+    shell:
+        """
+        module load drep/3.4.0 fastani/1.33 mash/2.3
+        mkdir -p {params.outdir}
+        dRep dereplicate {params.outdir} -g {input} -p {threads} -pa 0.95
+        """
 
 
 
