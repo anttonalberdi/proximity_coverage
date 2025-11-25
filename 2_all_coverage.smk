@@ -75,7 +75,7 @@ rule maxbin_depth:
         # Column: 1=contig, 2=len, 3=totalAvgDepth, then 4,6,8,... are sample depths
         col=$(( 4 + 2*{params.idx} ))
 
-        awk -v col="$col" 'NR>1 && NF>=col { print $1 "\t" $col+0 }' "$depthfile" > "{output}"
+        awk -v col="$col" 'NR>1 && NF>=col {{ print $1 "\t" $col+0 }}' "$depthfile" > "{output}"
         """
 
 rule metabat2:
@@ -158,7 +158,7 @@ rule maxbin2:
         f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}.tsv"
     params:
         basedir=f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}",
-        basename=f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}/{{assembly}}"
+        basename=f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}/{{assembly}}",
         abund=lambda wildcards, input: " ".join(f"-abund {f}" for f in input.depth)
     threads: 1
     resources:
