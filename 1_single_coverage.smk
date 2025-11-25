@@ -93,7 +93,7 @@ rule metabat2_checkm:
         module load checkm2/1.0.2
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
-        checkm2 predict -i {params.bins_dir}/*.fa -o {params.outdir} -t {threads}
+        checkm2 predict -i {params.bins_dir}/*.fa -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
         """
 
 rule metabat2_drep:
@@ -160,7 +160,7 @@ rule maxbin2_checkm:
         module load checkm2/1.0.2
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
-        checkm2 predict -i {params.bins_dir}/*.fasta -o {params.outdir} -t {threads}
+        checkm2 predict -i {params.bins_dir}/*.fasta -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
         """
 
 rule maxbin2_drep:
