@@ -55,7 +55,7 @@ snakemake -s 1_single_coverage.smk --cores 8 --profile .
 Runs binning relying on all samples' coverage profiles.
 
 ```sh
-screen -r proximity1
+screen -r proximity3
 module load snakemake/9.9.0
 snakemake -s 2_all_coverage.smk --cores 8 --profile .
 ```

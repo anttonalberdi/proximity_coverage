@@ -10,8 +10,8 @@ SAMPLES, = glob_wildcards(f"{WORKDIR}/0_preprocessing/bowtie/{{sample}}_1.fq.gz"
 
 rule all:
     input:
-        expand(f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES),
-        expand(f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv", sample=SAMPLES)
+        expand(f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/data_tables/genomeInformation.csv", sample=SAMPLES),
+        expand(f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/data_tables/genomeInformation.csv", sample=SAMPLES)
 
 rule assembly_map:
     input:
@@ -104,14 +104,14 @@ rule metabat2_drep:
         genomes=f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv",
         genomeinfo=f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}.tsv"
     output:
-        f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/dereplicated_genomes.csv"
+        f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}/data_tables/genomeInformation.csv"
     params:
         bins_dir=lambda wildcards: f"{WORKDIR}/1_single_coverage/metabat2/{wildcards.sample}",
         outdir=f"{WORKDIR}/1_single_coverage/metabat2_drep/{{sample}}"
     threads: 8
     resources:
         mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
-        runtime=lambda wildcards, input, attempt: min(20000, max(90, int(input.size_mb * 100) * 2 ** (attempt - 1)))
+        runtime=lambda wildcards, input, attempt: min(20000, max(15, int(input.size_mb * 100) * 2 ** (attempt - 1)))
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
         """
@@ -174,13 +174,13 @@ rule maxbin2_drep:
         genomes=f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv",
         genomeinfo=f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}.tsv"
     output:
-        f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/dereplicated_genomes.csv"
+        f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}/data_tables/genomeInformation.csv"
     params:
         outdir=f"{WORKDIR}/1_single_coverage/maxbin2_drep/{{sample}}"
     threads: 8
     resources:
         mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
-        runtime=lambda wildcards, input, attempt: min(20000, max(90, int(input.size_mb * 1000) * 2 ** (attempt - 1)))
+        runtime=lambda wildcards, input, attempt: min(20000, max(15, int(input.size_mb * 1000) * 2 ** (attempt - 1)))
     message: "Dereplicating MetaBAT2 bins for {wildcards.sample} at 95% ANI..."
     shell:
         """
