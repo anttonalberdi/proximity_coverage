@@ -79,7 +79,7 @@ rule metabat2_checkm:
     input:
         f"{WORKDIR}/1_single_coverage/metabat2/{{sample}}.tsv"
     output:
-        f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}/quality_report.tsv"
+        f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}.tsv"
     params:
         bins_dir=lambda wildcards: f"{WORKDIR}/1_single_coverage/metabat2/{wildcards.sample}",
         outdir=f"{WORKDIR}/1_single_coverage/metabat2_checkm/{{sample}}"
@@ -94,6 +94,9 @@ rule metabat2_checkm:
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
         checkm2 predict -i {params.bins_dir}/*.fa -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
+
+        # Prepare genome info for drep
+        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "Name","Completeness","Contamination"; next}} {{print $1,$2,$3}}' {params.outdir}/quality_report.tsv > {output}
         """
 
 rule metabat2_drep:
@@ -146,7 +149,7 @@ rule maxbin2_checkm:
     input:
         f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv"
     output:
-        f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}/quality_report.tsv"
+        f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}.tsv"
     params:
         bins_dir=lambda wildcards: f"{WORKDIR}/1_single_coverage/maxbin2/{wildcards.sample}",
         outdir=f"{WORKDIR}/1_single_coverage/maxbin2_checkm/{{sample}}"
@@ -161,6 +164,9 @@ rule maxbin2_checkm:
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
         checkm2 predict -i {params.bins_dir}/*.fasta -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
+
+        # Prepare genome info for drep
+        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "Name","Completeness","Contamination"; next}} {{print $1,$2,$3}}' {params.outdir}/quality_report.tsv > {output}
         """
 
 rule maxbin2_drep:
