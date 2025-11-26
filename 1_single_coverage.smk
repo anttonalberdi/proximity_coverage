@@ -71,8 +71,20 @@ rule metabat2:
         module load metabat2/2.17
         metabat2 -i {input.assembly} -a {input.depth} -o {params.basename} -m 1500 --saveCls
 
+        #Standardise bin names
+        dir="$(dirname {params.basename})"
+        base="$(basename {params.basename})"
+
+        i=0
+        for f in "$dir"/"$base".*.fa; do
+            [ -e "$f" ] || continue
+            i=$((i+1))
+            new=$(printf "%s/MET_SIN_%s_%03d.fna" "$dir" "$base" "$i")
+            mv "$f" "$new"
+        done
+
         # Generate summary file for dRep
-        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fa" | sort > {output}
+        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "*$(basename {params.basename})_*.fna" | sort > {output}
         """
 
 rule metabat2_checkm:
@@ -141,9 +153,22 @@ rule maxbin2:
         mkdir -p {params.basedir}
         /opt/shared_software/shared_envmodules/conda/maxbin2-2.2.7/bin/run_MaxBin.pl -contig {input.assembly} -abund {input.depth} -max_iteration 10 -out {params.basename} -min_contig_length 1500
         
+        #Standardise bin names
+        dir="$(dirname {params.basename})"
+        base="$(basename {params.basename})"
+
+        i=0
+        for f in "$dir"/"$base".*.fasta; do
+            [ -e "$f" ] || continue
+            i=$((i+1))
+            new=$(printf "%s/MAX_SIN_%s_%03d.fna" "$dir" "$base" "$i")
+            mv "$f" "$new"
+        done
+
         # Generate summary file for dRep
-        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fasta" | sort > {output}
+        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "*$(basename {params.basename})_*.fna" | sort > {output}
         """
+
 
 rule maxbin2_checkm:
     input:

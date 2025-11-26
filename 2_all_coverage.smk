@@ -242,23 +242,3 @@ rule maxbin2_drep:
         rm -rf {params.outdir}
         dRep dereplicate {params.outdir} -g {input.genomes} -p {threads} -pa 0.95 --genomeInfo {input.genomeinfo}
         """
-
-rule maxbin2_drep:
-    input:
-        genomes=f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}.tsv",
-        genomeinfo=f"{WORKDIR}/2_all_coverage/maxbin2_checkm/{{assembly}}.tsv"
-    output:
-        f"{WORKDIR}/2_all_coverage/maxbin2_drep/{{assembly}}/data_tables/genomeInformation.csv"
-    params:
-        outdir=f"{WORKDIR}/2_all_coverage/maxbin2_drep/{{assembly}}"
-    threads: 8
-    resources:
-        mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
-        runtime=lambda wildcards, input, attempt: min(20000, max(15, int(input.size_mb * 1000) * 2 ** (attempt - 1)))
-    message: "Dereplicating MetaBAT2 bins for {wildcards.assembly} at 95% ANI..."
-    shell:
-        """
-        module load drep/3.6.2 fastani/1.33 mash/2.3
-        rm -rf {params.outdir}
-        dRep dereplicate {params.outdir} -g {input.genomes} -p {threads} -pa 0.95 --genomeInfo {input.genomeinfo}
-        """
