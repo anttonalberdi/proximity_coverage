@@ -96,8 +96,20 @@ rule metabat2:
         module load metabat2/2.17
         metabat2 -i {input.assembly} -a {input.depth} -o {params.basename} -m 1500 --saveCls
 
+        #Standardise bin names
+        dir="$(dirname {params.basename})"
+        base="$(basename {params.basename})"
+
+        i=0
+        for f in "$dir"/"$base".*.fa; do
+            [ -e "$f" ] || continue
+            i=$((i+1))
+            new=$(printf "%s/MET_ALL_%s_%03d.fna" "$dir" "$base" "$i")
+            mv "$f" "$new"
+        done
+
         # Generate summary file for dRep
-        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fa" | sort > {output}
+        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "*$(basename {params.basename})_*.fna" | sort > {output}
         """
 
 rule metabat2_checkm:
@@ -118,10 +130,10 @@ rule metabat2_checkm:
         module load checkm2/1.0.2
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
-        checkm2 predict -i {params.bins_dir}/*.fa -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
+        checkm2 predict -i {params.bins_dir}/*.fna -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
 
         # Prepare genome info for drep
-        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fa",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
+        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fna",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
         """
 
 rule metabat2_drep:
@@ -144,7 +156,6 @@ rule metabat2_drep:
         rm -rf {params.outdir}
         dRep dereplicate {params.outdir} -g {input.genomes} -p {threads} -pa 0.95 --genomeInfo {input.genomeinfo}
         """
-
 
 rule maxbin2:
     input:
@@ -171,9 +182,21 @@ rule maxbin2:
         rm -rf {params.basedir}
         mkdir -p {params.basedir}
         /opt/shared_software/shared_envmodules/conda/maxbin2-2.2.7/bin/run_MaxBin.pl -contig {input.assembly} {params.abund} -max_iteration 10 -out {params.basename} -min_contig_length 1500
-        
+    
+        #Standardise bin names
+        dir="$(dirname {params.basename})"
+        base="$(basename {params.basename})"
+
+        i=0
+        for f in "$dir"/"$base".*.fasta; do
+            [ -e "$f" ] || continue
+            i=$((i+1))
+            new=$(printf "%s/MAX_ALL_%s_%03d.fna" "$dir" "$base" "$i")
+            mv "$f" "$new"
+        done
+
         # Generate summary file for dRep
-        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "$(basename {params.basename}).*.fasta" | sort > {output}
+        find "$(dirname {params.basename})" -maxdepth 1 -type f -name "*$(basename {params.basename})_*.fna" | sort > {output}
         """
 
 rule maxbin2_checkm:
@@ -194,10 +217,30 @@ rule maxbin2_checkm:
         module load checkm2/1.0.2
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
-        checkm2 predict -i {params.bins_dir}/*.fasta -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
+        checkm2 predict -i {params.bins_dir}/*.fna -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
 
         # Prepare genome info for drep
-        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fasta",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
+        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fna",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
+        """
+
+rule maxbin2_drep:
+    input:
+        genomes=f"{WORKDIR}/2_all_coverage/maxbin2/{{assembly}}.tsv",
+        genomeinfo=f"{WORKDIR}/2_all_coverage/maxbin2_checkm/{{assembly}}.tsv"
+    output:
+        f"{WORKDIR}/2_all_coverage/maxbin2_drep/{{assembly}}/data_tables/genomeInformation.csv"
+    params:
+        outdir=f"{WORKDIR}/2_all_coverage/maxbin2_drep/{{assembly}}"
+    threads: 8
+    resources:
+        mem_mb=lambda wildcards, input, attempt: max(64*1024, int(input.size_mb * 1000) * 2 ** (attempt - 1)),
+        runtime=lambda wildcards, input, attempt: min(20000, max(15, int(input.size_mb * 1000) * 2 ** (attempt - 1)))
+    message: "Dereplicating MetaBAT2 bins for {wildcards.assembly} at 95% ANI..."
+    shell:
+        """
+        module load drep/3.6.2 fastani/1.33 mash/2.3
+        rm -rf {params.outdir}
+        dRep dereplicate {params.outdir} -g {input.genomes} -p {threads} -pa 0.95 --genomeInfo {input.genomeinfo}
         """
 
 rule maxbin2_drep:
