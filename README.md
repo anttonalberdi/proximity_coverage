@@ -69,7 +69,7 @@ Runs binning using an increasing number of coverage profiles, sorted by metageno
 ```sh
 screen -r proximity1
 module load snakemake/9.9.0
-snakemake -s 3_proximity_coverage.smk --cores 8 --profile .
+snakemake -s 3_proximity_coverage.smk --cores 24 --profile .
 ```
 
 #### 4 - Random coverage
@@ -79,5 +79,73 @@ Runs binning using an increasing number of randomly selected coverage profiles.
 ```sh
 screen -r proximity1
 module load snakemake/9.9.0
-snakemake -s 4_random_coverage.smk --cores 8 --profile .
+snakemake -s 4_random_coverage.smk --cores 24 --profile .
+```
+
+#### 5 - List and cluster genomes
+
+List genomes under comparison and run dRep.
+
+```sh
+useconda
+module load drep/3.6.2 fastani/1.33 mash/2.3
+
+SAMPLES=($(ls 1_single_coverage/bowtie2/*.bam | sed 's/.*\///; s/\.bam$//'))
+
+for ID in "${SAMPLES[@]}"; do
+    echo "Processing $ID"
+
+    python list_dereplicated_genomes.py \
+        --assembly "$ID" \
+        --binner metabat2 \
+        --output "5_clustering/$ID"
+
+    sbatch --partition=cpuqueue \
+        --job-name="drep_$ID" \
+        --qos=normal \
+        --cpus-per-task=4 \
+        --mem=8G \
+        --time=0:15:00 \
+        --wrap="dRep compare 5_clustering/$ID -g 5_clustering/${ID}/${ID}_metabat2_paths.txt"
+done
+```
+
+#### 6 - Compile cluster data
+
+Compile data required for statistical analyses and visualisations in R.
+
+```sh
+mkdir -p 6_final
+ls 5_clustering > 6_final/clusters.csv
+cat 5_clustering/*/*_genomeInfo.csv > 6_final/genomeInfo.csv
+cat 5_clustering/*/data_tables/Ndb.csv > 6_final/aniDist.csv
+```
+
+
+
+
+
+
+
+
+
+
+
+
+#### 7 - Compute cluster statistics
+
+Compute cluster statistics.
+
+```sh
+ID="EHI01280"
+python compute_cluster_stats.py -m 10 -n "5_clustering/$ID/data_tables/Ndb.csv" -g "5_clustering/$ID/${ID}_metabat2_genomeInfo.csv" -o "5_clustering/$ID"
+cat 5_clustering/$ID/binning_metrics.csv
+
+ID="EHI01283"
+python compute_cluster_stats.py -m 10 -n "5_clustering/$ID/data_tables/Ndb.csv" -g "5_clustering/$ID/${ID}_metabat2_genomeInfo.csv" -o "5_clustering/$ID"
+cat 5_clustering/$ID/binning_metrics.csv
+
+ID="EHI01321"
+python compute_cluster_stats.py -m 10 -n "5_clustering/$ID/data_tables/Ndb.csv" -g "5_clustering/$ID/${ID}_metabat2_genomeInfo.csv" -o "5_clustering/$ID"
+cat 5_clustering/$ID/binning_metrics.csv
 ```

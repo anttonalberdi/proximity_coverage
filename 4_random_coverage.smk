@@ -38,56 +38,28 @@ READ_ASSEMBLY_ITER_PAIRS = {
 
 rule all:
     input:
-        expand(f"{WORKDIR}/4_random_coverage/{{iteration}}/bowtie2/{{assembly}}_metabat.depth", iteration=ITERATIONS, assembly=ASSEMBLIES),
-        expand(f"{WORKDIR}/4_random_coverage/{{iteration}}/bowtie2/{{assembly}}_{{reads}}_maxbin.depth", iteration=ITERATIONS, assembly=ASSEMBLIES, reads=READS),
         expand(f"{WORKDIR}/4_random_coverage/{{iteration}}/metabat2_drep/{{assembly}}/data_tables/genomeInformation.csv", iteration=ITERATIONS, assembly=ASSEMBLIES),
-        expand(f"{WORKDIR}/4_random_coverage/{{iteration}}/maxbin2_drep/{{assembly}}/data_tables/genomeInformation.csv", iteration=ITERATIONS, assembly=ASSEMBLIES)
-
-rule assembly_map:
-    input:
-        index=f"{WORKDIR}/0_preprocessing/megahit/{{assembly}}.rev.2.bt2",
-        r1=f"{WORKDIR}/0_preprocessing/bowtie/{{reads}}_1.fq.gz",
-        r2=f"{WORKDIR}/0_preprocessing/bowtie/{{reads}}_2.fq.gz"
-    output:
-        f"{WORKDIR}/4_random_coverage/{{iteration}}/bowtie2/{{reads}}_vs_{{assembly}}.bam"
-    benchmark:
-        f"{WORKDIR}/4_random_coverage/{{iteration}}/benchmark/assembly_map/{{reads}}_vs_{{assembly}}.txt"
-    params:
-        basename=f"{WORKDIR}/0_preprocessing/megahit/{{assembly}}"
-    threads: 8
-    resources:
-        mem_mb=lambda wildcards, input, attempt: max(8*1024, int(input.size_mb * 3) * 2 ** (attempt - 1)),
-        runtime=lambda wildcards, input, attempt: max(15, int(input.size_mb / 5) * 2 ** (attempt - 1))
-    message: "Mapping {wildcards.iteration}: reads {wildcards.reads} to assembly {wildcards.assembly}..."
-    run:
-        key = (wildcards.iteration, wildcards.reads, wildcards.assembly)
-        if key not in READ_ASSEMBLY_ITER_PAIRS:
-            raise ValueError(f"Combination {wildcards.iteration} {wildcards.reads} vs {wildcards.assembly} not selected for random coverage.")
-        shell("""
-            module load bowtie2/2.4.2 samtools/1.21
-            bowtie2 -x {params.basename} -1 {input.r1} -2 {input.r2} | samtools view -bS - | samtools sort -o {output}
-        """)
-
+        #expand(f"{WORKDIR}/4_random_coverage/{{iteration}}/maxbin2_drep/{{assembly}}/data_tables/genomeInformation.csv", iteration=ITERATIONS, assembly=ASSEMBLIES)
 
 rule assembly_map_depth:
     input:
-        lambda wildcards: expand(
-            f"{WORKDIR}/4_random_coverage/{wildcards.iteration}/bowtie2/{{reads}}_vs_{wildcards.assembly}.bam",
+        bams=lambda wildcards: expand(
+            f"{WORKDIR}/2_all_coverage/bowtie2/{{reads}}_vs_{{assembly}}.bam",
             reads=ASSEMBLY_READS[wildcards.iteration][wildcards.assembly],
+            assembly=wildcards.assembly,
         )
     output:
         f"{WORKDIR}/4_random_coverage/{{iteration}}/bowtie2/{{assembly}}_metabat.depth"
     threads: 1
     resources:
-        mem_mb=lambda wildcards, input, attempt: max(8*1024, int(input.size_mb) * 2 ** (attempt - 1)),
+        mem_mb=lambda wildcards, input, attempt: max(8 * 1024, int(input.size_mb) * 2 ** (attempt - 1)),
         runtime=lambda wildcards, input, attempt: min(20000, max(15, int(input.size_mb / 100) * 2 ** (attempt - 1)))
-    message: "Summarising coverage {wildcards.iteration} for assembly {wildcards.assembly}..."
+    message: "Summarising random coverage {wildcards.iteration} for assembly {wildcards.assembly}..."
     shell:
         """
         module load metabat2/2.17
-        jgi_summarize_bam_contig_depths --outputDepth {output} {input}
+        jgi_summarize_bam_contig_depths --outputDepth {output} {input.bams}
         """
-
 
 rule maxbin_depth:
     input:

@@ -18,7 +18,7 @@ READS = SAMPLES
 # Iterate mapping sizes R2..R9 (skip single read-set and skip all-reads).
 MAX_ITER = min(len(READS) - 1, 9)
 ITERATION_SIZES = [i for i in range(2, MAX_ITER + 1)]
-ITERATIONS = [f"R{i}" for i in ITERATION_SIZES]
+ITERATIONS = [f"P{i}" for i in ITERATION_SIZES]
 
 
 def ordered_reads_by_proximity(distances, assembly):
@@ -80,7 +80,7 @@ rule all:
     input:
         lambda wildcards: checkpoints.mash_distances.get().output[0],
         expand(f"{WORKDIR}/3_proximity_coverage/{{iteration}}/metabat2_drep/{{assembly}}/data_tables/genomeInformation.csv", iteration=ITERATIONS, assembly=ASSEMBLIES),
-        expand(f"{WORKDIR}/3_proximity_coverage/{{iteration}}/maxbin2_drep/{{assembly}}/data_tables/genomeInformation.csv", iteration=ITERATIONS, assembly=ASSEMBLIES)
+        #expand(f"{WORKDIR}/3_proximity_coverage/{{iteration}}/maxbin2_drep/{{assembly}}/data_tables/genomeInformation.csv", iteration=ITERATIONS, assembly=ASSEMBLIES)
 
 
 rule mash_sketch_reads:
