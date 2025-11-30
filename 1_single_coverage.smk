@@ -105,10 +105,10 @@ rule metabat2_checkm:
         module load checkm2/1.0.2
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
-        checkm2 predict -i {params.bins_dir}/*.fa -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
+        checkm2 predict -i {params.bins_dir}/*.fna -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
 
         # Prepare genome info for drep
-        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fa",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
+        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fna",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
         """
 
 rule metabat2_drep:
@@ -169,7 +169,6 @@ rule maxbin2:
         find "$(dirname {params.basename})" -maxdepth 1 -type f -name "*$(basename {params.basename})_*.fna" | sort > {output}
         """
 
-
 rule maxbin2_checkm:
     input:
         f"{WORKDIR}/1_single_coverage/maxbin2/{{sample}}.tsv"
@@ -188,10 +187,10 @@ rule maxbin2_checkm:
         module load checkm2/1.0.2
         rm -rf {params.outdir}
         mkdir -p {params.outdir}
-        checkm2 predict -i {params.bins_dir}/*.fasta -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
+        checkm2 predict -i {params.bins_dir}/*.fna -o {params.outdir} -t {threads} --database_path /maps/datasets/globe_databases/checkm2/20250215/CheckM2_database/uniref100.KO.1.dmnd
 
         # Prepare genome info for drep
-        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fasta",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
+        awk -F'\t' 'BEGIN{{OFS=","}} NR==1{{print "genome","completeness","contamination"; next}} {{print $1".fna",$2,$3}}' {params.outdir}/quality_report.tsv > {output}
         """
 
 rule maxbin2_drep:
